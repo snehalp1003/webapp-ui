@@ -147,6 +147,8 @@ class SellPage extends React.Component {
     }
 
     deleteBook = (bookISBN, email) => {
+        this.closeHandleDelete()
+        var self = this;
         let targetUrl =`/v1/deleteBook/bookISBN/${bookISBN}/bookSoldBy/${email}/userLoggedIn/${email}`
 
         return fetch(targetUrl , {
@@ -161,6 +163,9 @@ class SellPage extends React.Component {
                         alert("Could not delete book !");
                     }
 
+                })
+                .then(data => {
+                    self.props.func2(data);
                 })
                 .catch(er => console.log(er))
     }
@@ -351,7 +356,11 @@ const mapDispatchToProps = dispatch => {
         func1: (book) => dispatch({
                     type: 'ADD_BOOK_FOR_SELLING',
                     book: book
-                })
+                }),
+        func2: (book) => dispatch({
+                    type: 'FETCH_BOOKS_FOR_SELLING',
+                    book: book
+        })
     }
 };
 
