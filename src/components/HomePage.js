@@ -7,6 +7,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { connect } from "react-redux";
 import updateUserPersonalDetails from '../apiCalls/updateUserPersonalDetails.js';
 import updateUserPassword from '../apiCalls/updateUserPassword.js';
+import Tab from 'react-bootstrap/Tab'
+import Tabs from 'react-bootstrap/Tabs'
+import Form from 'react-bootstrap/Form'
+import BuyPage from './BuyPage'
+import SellPage from './SellPage'
+import CartPage from './CartPage'
 
 class HomePage extends React.Component {
     constructor(props) {
@@ -15,11 +21,13 @@ class HomePage extends React.Component {
             email: this.props.userStore.email,
             firstname: this.props.userStore.firstname,
             lastname: this.props.userStore.lastname,
+            password: this.props.userStore.password,
             oldPassword: '',
             newPassword: '',
             confirmPassword: '',
             updatePersonalDetails: false,
-            updatePassword: false
+            updatePassword: false,
+            key: 'Profile',
         }
     }
 
@@ -27,6 +35,7 @@ class HomePage extends React.Component {
         this.setState({
             updatePersonalDetails: false
         })
+        // refreshUserDetails(email,password)
     }
 
     updatePersonalDetailsShow() {
@@ -53,14 +62,31 @@ class HomePage extends React.Component {
     }
 
     render() {
+        if (this.state.key === 'Buy') {
+             return <BuyPage {...this.props}/>
+        } else if (this.state.key === 'Sell') {
+            return <SellPage {...this.props}/>
+        } else if (this.state.key === 'Cart') {
+            return <CartPage {...this.props}/>
+        }
         return (
           <div className="HomePage">
             <div className="HomePage-header">
                 <img src={logo} className="HomePage-logo" alt="logo"/>
             </div>
             <div className="HomePage-body">
-              <form>
-                <label>Personal Details</label>
+            <Tabs id="uncontrolled-tab"
+                  activeKey={this.state.key} onSelect={key => this.setState({ key })}>
+                <Tab eventKey="Profile" title="Profile">
+                </Tab>
+                <Tab eventKey="Buy" title="Buy a book">
+                </Tab>
+                <Tab eventKey="Sell" title="Sell a book">
+                </Tab>
+                <Tab eventKey="Cart" title="Cart">
+                </Tab>
+            </Tabs>
+              <Form>
                 <br></br>
                 <br></br>
                 <br></br>
@@ -82,7 +108,7 @@ class HomePage extends React.Component {
                   <input type="text" email="email" value={this.props.userStore.email} readOnly/>
                 <br></br>
                 <br></br>
-              </form>
+              </Form>
               <br></br>
               <br></br>
               <div>

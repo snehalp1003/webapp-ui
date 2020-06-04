@@ -17,8 +17,6 @@ class LoginPage extends React.Component {
             enteredPassword: '',
             showHomepage: false
         }
-
-
     }
 
     handleClose() {
@@ -31,6 +29,13 @@ class LoginPage extends React.Component {
         this.setState({
             show: true
         })
+    }
+
+    callMethodsOnLogin(email,password) {
+        this.fetchUserDetails(email,password)
+        this.fetchBooksForSelling(email)
+        this.fetchBooksForBuying(email)
+        this.fetchBooksInCart(email)
     }
 
 
@@ -48,6 +53,51 @@ class LoginPage extends React.Component {
                 .then(data => {
                     self.props.func1(self.state.enteredEmail, data.userFirstName, data.userLastName, self.state.enteredPassword);
                     self.setState({showHomepage: true});
+                })
+                .catch(er => console.log(er))
+    }
+
+    fetchBooksForSelling = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewBooksForSelling/userLoggedIn/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func2(data);
+                })
+                .catch(er => console.log(er))
+    }
+
+    fetchBooksForBuying = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewBooksForBuying/userLoggedIn/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func3(data);
+                })
+                .catch(er => console.log(er))
+    }
+
+    fetchBooksInCart = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewCartDetails/bookBoughtBy/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func4(data);
                 })
                 .catch(er => console.log(er))
     }
@@ -78,7 +128,7 @@ class LoginPage extends React.Component {
               <br></br>
               <div>
                   <Button variant="primary" onClick={() => this.handleShow()}>Sign Up</Button> &emsp;
-                  <Button variant="primary" onClick={() => this.fetchUserDetails(this.state.enteredEmail,this.state.enteredPassword)}>Sign In</Button>
+                  <Button variant="primary" onClick={() => this.callMethodsOnLogin(this.state.enteredEmail,this.state.enteredPassword)}>Sign In</Button>
                   <Modal show={this.state.show} onHide={() => this.handleClose()}>
                       <Modal.Header closeButton>
                           <Modal.Title>Create a account</Modal.Title>
@@ -122,12 +172,24 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = dispatch => {
     return {
         func1: (email, firstname, lastname, password) => dispatch({
-                    type: 'POST_USER_DETAILS',
-                    email: email,
-                    firstname: firstname,
-                    lastname: lastname,
-                    password: password
-                })
+                type: 'POST_USER_DETAILS',
+                email: email,
+                firstname: firstname,
+                lastname: lastname,
+                password: password
+        }),
+        func2: (book) => dispatch ({
+                type: 'FETCH_BOOKS_FOR_SELLING',
+                book: book
+        }),
+        func3: (book) => dispatch ({
+                type: 'FETCH_BOOKS_FOR_BUYING',
+                book: book
+        }),
+        func4: (book) => dispatch ({
+                type: 'FETCH_BOOKS_IN_CART',
+                book: book
+        })
     }
 };
 
