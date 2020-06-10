@@ -65,7 +65,7 @@ class BuyPage extends React.Component {
 
                 })
                 .then(data => {
-                    self.props.func1(data);
+                    self.props.func1(this.state.selectedBook);
                 })
                 .catch(er => console.log(er))
     }
