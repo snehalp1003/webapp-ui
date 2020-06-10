@@ -35,7 +35,6 @@ class HomePage extends React.Component {
         this.setState({
             updatePersonalDetails: false
         })
-        // refreshUserDetails(email,password)
     }
 
     updatePersonalDetailsShow() {

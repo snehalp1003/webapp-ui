@@ -18,17 +18,16 @@ class SellPage extends React.Component {
         super(props);
         this.state = {
             addNewBook: false,
-            show: false,
+            showUpdateModal: false,
             delete: false,
             selectedBook: "",
-            booksForSell: this.props.userStore.booksForSell,
-            key: 'Sell',
             updatedBookTitle: "",
-            updatedBookISBN: "",
-            updatedBookAuthors: "",
             updatedBookPrice: "",
             updatedBookQuantity: "",
-            updatedBookPubDate: ""
+            updatedBookAuthors: "",
+            updatedBookPubDate: "",
+            booksForSell: this.props.userStore.booksForSell,
+            key: 'Sell'
         };
     }
 
@@ -47,22 +46,32 @@ class SellPage extends React.Component {
 
     handleClose() {
         this.setState({
-            show: false,
+            showUpdateModal: false,
             selectedBook: ""
         })
     }
 
     handleShow(item) {
         this.setState({
-            show: true,
-            selectedBook: item
+            showUpdateModal: true,
+            selectedBook: item,
+            updatedBookPrice: item.bookPrice,
+            updatedBookQuantity: item.bookQuantity,
+            updatedBookTitle: item.bookTitle,
+            updatedBookAuthors: item.bookAuthors,
+            updatedBookPubDate: item.bookPubDate
         })
     }
 
     closeHandleDelete() {
         this.setState({
             delete: false,
-            selectedBook: ""
+            selectedBook: "",
+            updatedBookTitle: "",
+            updatedBookPrice: "",
+            updatedBookQuantity: "",
+            updatedBookAuthors: "",
+            updatedBookPubDate: "",
         })
     }
 
@@ -121,13 +130,13 @@ class SellPage extends React.Component {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                bookAuthors: this.state.selectedBook.bookAuthors ? this.state.selectedBook.bookAuthors : this.state.bookAuthors,
+                bookAuthors: this.state.updatedBookAuthors ? this.state.updatedBookAuthors : this.state.selectedBook.bookAuthors,
                 bookISBN: bookISBN,
-                bookPrice: this.state.selectedBook.bookPrice ? this.state.selectedBook.bookPrice : this.state.bookPrice,
-                bookPubDate: this.state.selectedBook.bookPubDate ? this.state.selectedBook.bookPubDate : this.state.bookPubDate,
-                bookQuantity: this.state.selectedBook.bookQuantity ? this.state.selectedBook.bookQuantity : this.state.bookQuantity,
+                bookPrice: this.state.updatedBookPrice ? this.state.updatedBookPrice : this.state.selectedBook.bookPrice,
+                bookPubDate: this.state.updatedBookPubDate ? this.state.updatedBookPubDate : this.state.selectedBook.bookPubDate,
+                bookQuantity: this.state.updatedBookQuantity ? this.state.updatedBookQuantity : this.state.selectedBook.bookQuantity,
                 bookSoldBy: email,
-                bookTitle: this.state.selectedBook.bookTitle ? this.state.selectedBook.bookTitle : this.state.selectedBook.bookTitle
+                bookTitle: this.state.updatedBookTitle ? this.state.updatedBookTitle : this.state.selectedBook.bookTitle
             })
         })
                 .then(resp => {
@@ -157,6 +166,7 @@ class SellPage extends React.Component {
                 .then(resp => {
                     if (resp.status === 200) {
                         alert("Book deleted successfully !");
+
                         return resp.json()
                     }
                     else {
@@ -280,7 +290,7 @@ class SellPage extends React.Component {
                 </Modal.Footer>
             </Modal>
             {/*Modal for updating book details*/}
-            <Modal size='lg' show={this.state.show} onHide={() => this.handleClose()}>
+            <Modal size='lg' show={this.state.showUpdateModal} onHide={() => this.handleClose()}>
                 <Modal.Header closeButton>
                     <Modal.Title>Update Book Details</Modal.Title>
                 </Modal.Header>
@@ -288,7 +298,7 @@ class SellPage extends React.Component {
                     <label>
                       Title: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;
                     </label>
-                        <input type="text" title="title" value={this.state.selectedBook.bookTitle} readOnly/>
+                        <input type="text" title="title" value={this.state.updatedBookTitle} onChange={(e) => this.setState({updatedBookTitle: e.target.value})}/>
                         <br></br>
                         <br></br>
                     <label>
@@ -300,25 +310,25 @@ class SellPage extends React.Component {
                     <label>
                         Authors: &emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;
                     </label>
-                      <input type="text" authors="authors" value={this.state.selectedBook.bookAuthors} readOnly/>
+                      <input type="text" authors="authors" value={this.state.updatedBookAuthors} onChange={(e) => this.setState({updatedBookAuthors: e.target.value})}/>
                       <br></br>
                       <br></br>
                     <label>
                         Price: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
                     </label>
-                        <input type="text" price="price" value={this.state.selectedBook.bookPrice} onChange={(e) => this.setState({selectedBook: {bookPrice: e.target.value}})}/>
+                        <input type="text" price="price" value={this.state.updatedBookPrice} onChange={(e) => this.setState({updatedBookPrice: e.target.value})}/>
                         <br></br>
                         <br></br>
                     <label>
                         Quantity: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
                     </label>
-                        <input type="text" price="price" value={this.state.selectedBook.bookQuantity} onChange={(e) => this.setState({selectedBook: {bookQuantity: e.target.value}})}/>
+                        <input type="text" price="price" value={this.state.updatedBookQuantity} onChange={(e) => this.setState({updatedBookQuantity: e.target.value})}/>
                         <br></br>
                         <br></br>
                     <label>
                         Publication Date: &emsp;&emsp;
                     </label>
-                        <input type="text" publicationDate="publicationDate" value={this.state.selectedBook.bookPubDate} readOnly/>
+                        <input type="text" publicationDate="publicationDate" value={this.state.updatedBookPubDate} onChange={(e) => this.setState({updatedBookPubDate: e.target.value})}/>
                         <br></br>
                         <br></br>
 
@@ -335,7 +345,7 @@ class SellPage extends React.Component {
                         This book will be deleted from the list! Proceed with deletion?
                     </p>
                     <hr />
-                    <div className="d-flex justify-content-end">
+                    <div className="d-flex justify-content-center">
                         <Button onClick={() => this.deleteBook(this.state.selectedBook.bookISBN, this.state.selectedBook.bookSoldBy)} variant="outline-success">Delete</Button>
                     </div>
             </Alert>
