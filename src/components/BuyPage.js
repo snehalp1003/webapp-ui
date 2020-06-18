@@ -79,8 +79,8 @@ class BuyPage extends React.Component {
             return <CartPage {...this.props}/>
         }
         var contents = ""
-        if (this.state.booksForBuy !== undefined) {
-            contents = this.state.booksForBuy.map(item => {
+        if (this.props.userStore.booksForBuy !== undefined) {
+            contents = this.props.userStore.booksForBuy.map(item => {
             return <tr>
                     <td>{item.bookTitle}</td>
                     <td>{item.bookAuthors}</td>
