@@ -3,6 +3,7 @@ import logo from '../UserLogo.svg';
 import './HomePage.css';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import Carousel from 'react-bootstrap/Carousel';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { connect } from "react-redux";
 import Table from 'react-bootstrap/Table'
@@ -20,6 +21,10 @@ class SellPage extends React.Component {
             addNewBook: false,
             showUpdateModal: false,
             delete: false,
+            openAddImage: false,
+            openViewImage: false,
+            fetchedImageData: "",
+            imageLocation: "",
             selectedBook: "",
             updatedBookTitle: "",
             updatedBookPrice: "",
@@ -82,6 +87,35 @@ class SellPage extends React.Component {
         })
     }
 
+    openModalToAddImage(item) {
+        this.setState({
+            openAddImage: true,
+            selectedBook: item
+        })
+    }
+
+    closeModalToAddImage() {
+        this.setState({
+            openAddImage: false,
+            selectedBook: ""
+        })
+    }
+
+    openModalToViewImage(item, userLoggedIn) {
+        this.setState({
+            openViewImage: true,
+            selectedBook: item
+        })
+        this.fetchImageFromS3(item, userLoggedIn)
+    }
+
+    closeModalToViewImage() {
+        this.setState({
+            openViewImage: false,
+            selectedBook: ""
+        })
+    }
+
     addNewBookToSell = (bookISBN, email) => {
         var self = this;
         let targetUrl =`/v1/insertBookDetails/bookISBN/${bookISBN}/bookSoldBy/${email}`
@@ -110,10 +144,15 @@ class SellPage extends React.Component {
                     else if(resp.status === 409) {
                         alert("Book already available !");
                     }
+                    else if(resp.status === 406) {
+                        alert("Invalid price or book quantity !")
+                    }
 
                 })
                 .then(data => {
-                    self.props.func1(data);
+                    if(data !== undefined) {
+                        self.props.func1(data);
+                    }
                 })
                 .catch(er => console.log(er))
     }
@@ -147,10 +186,15 @@ class SellPage extends React.Component {
                     else if(resp.status === 404) {
                         alert("Book not found !");
                     }
+                    else if(resp.status === 406) {
+                        alert("Invalid price or book quantity !")
+                    }
 
                 })
                 .then(data => {
-                    self.props.func1(data);
+                    if(data !== undefined) {
+                        self.props.func3(data);
+                    }
                 })
                 .catch(er => console.log(er))
     }
@@ -166,16 +210,48 @@ class SellPage extends React.Component {
                 .then(resp => {
                     if (resp.status === 200) {
                         alert("Book deleted successfully !");
-
-                        return resp.json()
+                        self.props.func2(bookISBN);
                     }
                     else {
                         alert("Could not delete book !");
                     }
+                })
+                .catch(er => console.log(er))
+    }
 
+    addImageToS3 = (bookISBN, bookSoldBy, imageFile) => {
+        var self = this;
+        let targetUrl = `/v1/uploadImageToS3/bookISBN/${bookISBN}/bookSoldBy/${bookSoldBy}`
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        return fetch(targetUrl , {
+            method: 'POST',
+            body: formData
+        })
+        .then(resp => {
+            if (resp.status === 200) {
+                self.props.func4(formData);
+                alert("Image uploaded successfully to S3 !");
+            }
+        })
+        .catch(er => console.log(er))
+    }
+
+    fetchImageFromS3 = (item, userLoggedIn) => {
+        var bookISBN = item.bookISBN
+        var self = this;
+        let targetUrl = `/v1/fetchImagesFromS3/bookISBN/${bookISBN}/userLoggedIn/${userLoggedIn}`
+
+        return fetch(targetUrl , {
+            method: 'GET'
+        })
+        .then(resp => {
+            if (resp.status === 200)
+                return resp.json();
                 })
                 .then(data => {
-                    self.props.func2(data);
+                    self.setState({fetchedImageData: data});
                 })
                 .catch(er => console.log(er))
     }
@@ -189,8 +265,8 @@ class SellPage extends React.Component {
             return <CartPage {...this.props}/>
         }
         var contents = ""
-        if (this.state.booksForSell !== undefined) {
-            contents = this.state.booksForSell.map(item => {
+        if (this.props.userStore.booksForSell !== undefined) {
+            contents = this.props.userStore.booksForSell.map(item => {
             return <tr>
                     <td>{item.bookISBN}</td>
                     <td>{item.bookTitle}</td>
@@ -198,6 +274,8 @@ class SellPage extends React.Component {
                     <td>{item.bookQuantity}</td>
                     <td>{<Button variant="primary" onClick={() => this.handleShow(item)}>Update</Button>}</td>
                     <td>{<Button variant="primary" onClick={() => this.showHandleDelete(item)}>Delete</Button>}</td>
+                    <td>{<Button variant="primary" onClick={() => this.openModalToAddImage(item)}>Add Image</Button>}</td>
+                    <td>{<Button variant="primary" onClick={() => this.openModalToViewImage(item, this.props.userStore.email)}>View Images</Button>}</td>
                 </tr>
             })
         }
@@ -234,6 +312,8 @@ class SellPage extends React.Component {
                         <th>Quantity Available</th>
                         <th>Update Details</th>
                         <th>Delete Book</th>
+                        <th>Add Book Image</th>
+                        <th>View Book Images</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -287,6 +367,7 @@ class SellPage extends React.Component {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.closeHandleNewBook()}>Close</Button>
                     <Button variant="primary" onClick={() => this.addNewBookToSell(this.state.bookISBN, this.props.userStore.email)}>Add</Button>
+                    <Button variant="primary">Add openAddImage</Button>
                 </Modal.Footer>
             </Modal>
             {/*Modal for updating book details*/}
@@ -349,6 +430,41 @@ class SellPage extends React.Component {
                         <Button onClick={() => this.deleteBook(this.state.selectedBook.bookISBN, this.state.selectedBook.bookSoldBy)} variant="outline-success">Delete</Button>
                     </div>
             </Alert>
+
+            {/*Modal for adding book openAddImage*/}
+            <Modal size='lg' show={this.state.openAddImage} onHide={() => this.closeModalToAddImage()}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add a image for book</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                <input type="file" className="book-image" id="inputFile" aria-describedby="inputGroupFileAddon01" ref={(ref) => this.state.imageLocation = ref}/>
+                <label className="book-image-label" htmlFor="inputGroupFile01">Choose file</label>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => this.closeModalToAddImage()}>Close</Button>
+                    <Button variant="primary" onClick={(e) => this.addImageToS3(this.state.selectedBook.bookISBN, this.state.selectedBook.bookSoldBy, this.state.imageLocation.files[0])}>Add Image</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/*Modal for viewing book images*/}
+            <Modal size='lg' show={this.state.openViewImage} onHide={() => this.closeModalToViewImage()}>
+                <Modal.Header closeButton>
+                    <Modal.Title>View book images</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Carousel>
+                        {Object.keys(this.state.fetchedImageData).map(img => (
+                            <Carousel.Item>
+                                <img className="d-block w-100" src={this.state.fetchedImageData[img]} alt={img.alt}/>
+                            </Carousel.Item>
+                        ))}
+                    </Carousel>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => this.closeModalToViewImage()}>Close</Button>
+                    <Button variant="primary">Delete Image</Button>
+                </Modal.Footer>
+            </Modal>
             </div>
           </div>
         );
@@ -367,9 +483,17 @@ const mapDispatchToProps = dispatch => {
                     type: 'ADD_BOOK_FOR_SELLING',
                     book: book
                 }),
-        func2: (book) => dispatch({
-                    type: 'FETCH_BOOKS_FOR_SELLING',
+        func2: (bookISBN) => dispatch({
+                    type: 'DELETE_BOOK_FROM_LIST',
+                    bookISBN: bookISBN
+        }),
+        func3: (book) => dispatch({
+                    type: 'UPDATE_BOOK_DETAILS',
                     book: book
+        }),
+        func4: (image) => dispatch({
+                    type: 'ADD_BOOK_IMAGE',
+                    image: image
         })
     }
 };
