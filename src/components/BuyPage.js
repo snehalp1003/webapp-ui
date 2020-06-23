@@ -3,6 +3,7 @@ import logo from '../UserLogo.svg';
 import './HomePage.css';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import Carousel from 'react-bootstrap/Carousel';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { connect } from "react-redux";
 import Table from 'react-bootstrap/Table';
@@ -20,6 +21,8 @@ class BuyPage extends React.Component {
             selectedBook: "",
             booksForBuy: this.props.userStore.booksForBuy,
             key: 'Buy',
+            openViewImage: false,
+            fetchedImageData: ""
         };
     }
 
@@ -34,6 +37,21 @@ class BuyPage extends React.Component {
         this.setState({
             show: true,
             selectedBook: item
+        })
+    }
+
+    openModalToViewImage(item) {
+        this.setState({
+            openViewImage: true,
+            selectedBook: item
+        })
+        this.fetchImageFromS3(item)
+    }
+
+    closeModalToViewImage() {
+        this.setState({
+            openViewImage: false,
+            selectedBook: ""
         })
     }
 
@@ -70,6 +88,28 @@ class BuyPage extends React.Component {
                 .catch(er => console.log(er))
     }
 
+    fetchImageFromS3 = (item, userLoggedIn) => {
+        var bookISBN = item.bookISBN
+        var bookSoldBy = item.bookSoldBy
+        var self = this;
+        let targetUrl = `/v1/fetchImagesFromS3/bookISBN/${bookISBN}/userLoggedIn/${bookSoldBy}`
+
+        return fetch(targetUrl , {
+            method: 'GET'
+        })
+        .then(resp => {
+            if (resp.status === 200) {
+                return resp.json();
+            } else if(resp.status === 204) {
+                return ""
+            }
+                })
+                .then(data => {
+                    self.setState({fetchedImageData: data});
+                })
+                .catch(er => console.log(er))
+    }
+
     render() {
         if (this.state.key === 'Profile') {
              return <HomePage {...this.props}/>
@@ -86,6 +126,7 @@ class BuyPage extends React.Component {
                     <td>{item.bookAuthors}</td>
                     <td>{item.bookPrice}</td>
                     <td>{<Button variant="primary" onClick={() => this.handleShow(item)}>View Details</Button>}</td>
+                    <td>{<Button variant="primary" onClick={() => this.openModalToViewImage(item)}>View Images</Button>}</td>
                 </tr>
             })
         }
@@ -115,6 +156,7 @@ class BuyPage extends React.Component {
                         <th>Authors</th>
                         <th>Price</th>
                         <th>View Details</th>
+                        <th>View Book Images</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,6 +203,25 @@ class BuyPage extends React.Component {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.handleClose()}>Close</Button>
                     <Button variant="primary" onClick={() => this.addBookToCart(this.props.userStore.email, this.state.selectedBook.bookISBN)}>Add to Cart</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/*Modal for viewing book images*/}
+            <Modal size='lg' show={this.state.openViewImage} onHide={() => this.closeModalToViewImage()}>
+                <Modal.Header closeButton>
+                    <Modal.Title>View book images</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Carousel wrap={false}>
+                        {Object.keys(this.state.fetchedImageData).map(img => (
+                            <Carousel.Item>
+                                <img className="d-block w-100" src={this.state.fetchedImageData[img]} alt={img.alt}/>
+                            </Carousel.Item>
+                        ))}
+                    </Carousel>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => this.closeModalToViewImage()}>Close</Button>
                 </Modal.Footer>
             </Modal>
             </div>

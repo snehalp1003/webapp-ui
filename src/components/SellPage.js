@@ -25,6 +25,7 @@ class SellPage extends React.Component {
             openViewImage: false,
             fetchedImageData: "",
             imageLocation: "",
+            currentImageFileName: "",
             selectedBook: "",
             updatedBookTitle: "",
             updatedBookPrice: "",
@@ -247,13 +248,33 @@ class SellPage extends React.Component {
             method: 'GET'
         })
         .then(resp => {
-            if (resp.status === 200)
+            if (resp.status === 200) {
                 return resp.json();
+            } else if(resp.status === 204) {
+                return ""
+            }
                 })
                 .then(data => {
                     self.setState({fetchedImageData: data});
                 })
                 .catch(er => console.log(er))
+    }
+
+    deleteImageFromS3 = (userLoggedIn, fileName) => {
+        var self = this;
+        let targetUrl = `/v1/deleteImageFromS3/userLoggedIn/${userLoggedIn}/fileName/${fileName}`
+
+        return fetch(targetUrl , {
+            method: 'DELETE'
+        })
+        .then(resp => {
+            if (resp.status === 200) {
+                alert("Image deleted successfully from S3 Bucket!");
+            } else {
+                alert("Image does not exist in S3 Bucket!")
+            }
+                })
+        .catch(er => console.log(er))
     }
 
     render() {
@@ -367,7 +388,6 @@ class SellPage extends React.Component {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.closeHandleNewBook()}>Close</Button>
                     <Button variant="primary" onClick={() => this.addNewBookToSell(this.state.bookISBN, this.props.userStore.email)}>Add</Button>
-                    <Button variant="primary">Add openAddImage</Button>
                 </Modal.Footer>
             </Modal>
             {/*Modal for updating book details*/}
@@ -452,17 +472,19 @@ class SellPage extends React.Component {
                     <Modal.Title>View book images</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Carousel>
+                    <Carousel wrap={false}>
                         {Object.keys(this.state.fetchedImageData).map(img => (
                             <Carousel.Item>
                                 <img className="d-block w-100" src={this.state.fetchedImageData[img]} alt={img.alt}/>
+                                <br></br>
+                                <br></br>
+                                <Button variant="primary" onClick={() => this.deleteImageFromS3(this.props.userStore.email, img)}>Delete Image</Button>
                             </Carousel.Item>
                         ))}
                     </Carousel>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.closeModalToViewImage()}>Close</Button>
-                    <Button variant="primary">Delete Image</Button>
                 </Modal.Footer>
             </Modal>
             </div>
