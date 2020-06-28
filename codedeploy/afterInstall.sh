@@ -8,5 +8,3 @@ sudo chmod +x /webapp-ui
 kill -9 $(ps -ef|grep webapp-ui | grep -v grep | awk '{print $2}')
 
 source /etc/environment
-#Running application and appending logs
-#nohup node /webapp-ui/bin/www > webapp.log 2> webapp_err.log &
