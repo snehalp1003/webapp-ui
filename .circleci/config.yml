@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   node: circleci/node@1.1.6
 jobs:
-  build-and-test:
+  pr-check:
     executor:
       name: node/default
     steps:
@@ -12,7 +12,80 @@ jobs:
             - run: npm install
             - run: npm build
             - run: npm start
+  build:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - run:
+          name: Install packages
+          command: sudo apt-get update && sudo apt-get install wget zip unzip python-pip python-dev build-essential -y
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Build Artifact
+          command: |
+            ls -al
+            echo "Building the artifact with npm"
+            npm install
+            npm install bootstrap
+            npm install react-bootstrap
+            ls -al
+            cd ../
+            pwd
+            ls -al
+      - run:
+          name: Zip Artifact
+          command: |
+            echo "Current build number is ${CIRCLE_BUILD_NUM}"
+            echo "Current directory"
+            pwd
+            echo "Current directory content"
+            ls -al
+            echo "Making the webapp_artifact directory"
+            mkdir -p webappui_artifact
+            echo "Changing directory to webappui_artifact"
+            cd webappui_artifact
+            echo "Copying all .sh files to webapp_artifact"
+            cp ../codedeploy/*.sh .
+            echo "Copying all .yml files to webapp_artifact"
+            cp ../*.yml .
+            echo "current directory content"
+            ls -al
+            echo "Zipping all files in the webappui_artifact directory"
+            zip -r webappui-${CIRCLE_BUILD_NUM}.zip .
+            echo "Removing the files except for the zip file from the directory"
+            rm *.yml *.sh *.jar *.properties
+            ls -al
+            pwd
+            echo "Changing directory to root"
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Upload Artifact to S3 Bucket
+          command: |
+            echo "Uploading artifact to S3 bucket ${CODE_DEPLOY_S3_BUCKET}"
+            cd webapp_artifact
+            aws s3 cp webappui-${CIRCLE_BUILD_NUM}.zip s3://${CODE_DEPLOY_S3_BUCKET}
+            cd ..
+      - run:
+          name: Deploy artifact on EC2
+          command: |
+            aws configure set region ${AWS_REGION}
+            echo "Deploying artifact on EC2 instance via codedeploy agent"
+            aws deploy create-deployment --application-name "csye6225-webapp-ui" --deployment-group-name "csye6225-webapp-ui-deployment" --s3-location bucket=${CODE_DEPLOY_S3_BUCKET},bundleType=zip,key=webappui-${CIRCLE_BUILD_NUM}.zip
+
 workflows:
-    build-and-test:
+    version: 2
+    pr-check-workflow:
       jobs:
-        - build-and-test
+      - pr-check
+    build_deploy-workflow:
+      jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
