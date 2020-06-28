@@ -54,6 +54,8 @@ jobs:
             cp -R ../public .
             echo "Copying src to webappui_artifact"
             cp -R ../src .
+            echo "Copying package.json to webappui_artifact"
+            cp ../package.json .
             echo "Copying package-lock.json to webappui_artifact"
             cp ../package-lock.json .
             echo "current directory content"
