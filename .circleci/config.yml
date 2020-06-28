@@ -30,7 +30,6 @@ jobs:
             npm install
             npm install bootstrap
             npm install react-bootstrap
-            npm run build
             ls -al
             cd ../
             pwd
