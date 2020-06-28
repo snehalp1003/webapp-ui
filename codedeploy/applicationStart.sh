@@ -1,5 +1,4 @@
 #!/bin/bash
 cd /home/ubuntu/webapp-ui
 printenv
-sudo npm run build
-sudo npm run start
+pm2 start node_modules/react-scripts/scripts/start.js --name "webapp-ui"
