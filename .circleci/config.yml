@@ -82,9 +82,9 @@ workflows:
   pr-check-workflow:
     jobs:
     - pr-check
-    build_deploy-workflow:
-      jobs:
-      - build:
+  build_deploy-workflow:
+    jobs:
+    - build:
           filters:
             branches:
               only:
