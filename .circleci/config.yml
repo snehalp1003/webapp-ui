@@ -11,7 +11,6 @@ jobs:
           steps:
             - run: npm install
             - run: npm build
-            - run: npm start
   build:
     executor:
       name: node/default
@@ -31,6 +30,7 @@ jobs:
             npm install
             npm install bootstrap
             npm install react-bootstrap
+            npm run build
             ls -al
             cd ../
             pwd
@@ -47,10 +47,18 @@ jobs:
             mkdir -p webappui_artifact
             echo "Changing directory to webappui_artifact"
             cd webappui_artifact
-            echo "Copying all .sh files to webapp_artifact"
+            echo "Copying all .sh files to webappui_artifact"
             cp ../codedeploy/*.sh .
-            echo "Copying all .yml files to webapp_artifact"
+            echo "Copying all .yml files to webappui_artifact"
             cp ../*.yml .
+            echo "Copying node_modules to webappui_artifact"
+            cp ../node_modules .
+            echo "Copying public to webappui_artifact"
+            cp ../public .
+            echo "Copying src to webappui_artifact"
+            cp ../src .
+            echo "Copying package-lock.json to webappui_artifact"
+            cp ../package-lock.json .
             echo "current directory content"
             ls -al
             echo "Zipping all files in the webappui_artifact directory"
