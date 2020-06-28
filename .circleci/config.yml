@@ -56,7 +56,7 @@ jobs:
             echo "Zipping all files in the webappui_artifact directory"
             zip -r webappui-${CIRCLE_BUILD_NUM}.zip .
             echo "Removing the files except for the zip file from the directory"
-            rm *.yml *.sh *.jar *.properties
+            rm *.yml *.sh
             ls -al
             pwd
             echo "Changing directory to root"
@@ -78,10 +78,10 @@ jobs:
             aws deploy create-deployment --application-name "csye6225-webapp-ui" --deployment-group-name "csye6225-webapp-ui-deployment" --s3-location bucket=${CODE_DEPLOY_S3_BUCKET},bundleType=zip,key=webappui-${CIRCLE_BUILD_NUM}.zip
 
 workflows:
-    version: 2
-    pr-check-workflow:
-      jobs:
-      - pr-check
+  version: 2
+  pr-check-workflow:
+    jobs:
+    - pr-check
     build_deploy-workflow:
       jobs:
       - build:
