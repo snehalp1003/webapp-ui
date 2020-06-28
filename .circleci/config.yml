@@ -57,8 +57,6 @@ jobs:
             cp -R ../src .
             echo "Copying node_modules to webappui_artifact"
             cp -R ../node_modules .
-            echo "Copying build to webappui_artifact"
-            cp -R ../build .
             echo "Copying package.json to webappui_artifact"
             cp ../package.json .
             echo "Copying package-lock.json to webappui_artifact"
