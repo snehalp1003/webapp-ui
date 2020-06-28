@@ -79,10 +79,10 @@ workflows:
     version: 2
     pr-check-workflow:
       jobs:
-        - pr-check
+      - pr-check
     build_deploy-workflow:
-    jobs:
-    - build:
+      jobs:
+      - build:
           filters:
             branches:
               only:
