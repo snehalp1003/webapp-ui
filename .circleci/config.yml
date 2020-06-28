@@ -50,8 +50,6 @@ jobs:
             cp ../codedeploy/*.sh .
             echo "Copying all .yml files to webappui_artifact"
             cp ../*.yml .
-            echo "Copying node_modules to webappui_artifact"
-            cp -R ../node_modules .
             echo "Copying public to webappui_artifact"
             cp -R ../public .
             echo "Copying src to webappui_artifact"

@@ -6,7 +6,15 @@ files:
     destination: /home/ubuntu/webapp-ui/
 
 hooks:
+  BeforeInstall:
+    - location: ./beforeInstall.sh
+      timeout: 180
+      runas: ubuntu
   AfterInstall:
     - location: ./afterInstall.sh
+      timeout: 180
+      runas: ubuntu
+  ApplicationStart:
+    - location: ./applicationStart.sh
       timeout: 180
       runas: ubuntu
