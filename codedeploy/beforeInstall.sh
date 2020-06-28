@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /home/centos/
+cd /home/ubuntu/
 rm -rf webapp-ui
