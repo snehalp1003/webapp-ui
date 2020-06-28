@@ -51,11 +51,11 @@ jobs:
             echo "Copying all .yml files to webappui_artifact"
             cp ../*.yml .
             echo "Copying node_modules to webappui_artifact"
-            cp ../node_modules .
+            cp -R ../node_modules .
             echo "Copying public to webappui_artifact"
-            cp ../public .
+            cp -R ../public .
             echo "Copying src to webappui_artifact"
-            cp ../src .
+            cp -R ../src .
             echo "Copying package-lock.json to webappui_artifact"
             cp ../package-lock.json .
             echo "current directory content"
