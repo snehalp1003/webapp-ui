@@ -1,5 +1,6 @@
 echo "Running after install script"
 cd /home/ubuntu/webapp-ui
+sudo npm install
 sudo chown -R ubuntu:ubuntu /home/ubuntu/*
 sudo chmod +x /webapp-ui
 
