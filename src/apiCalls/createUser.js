@@ -9,7 +9,10 @@ export default function postUserDetails(email,password,firstname,lastname) {
                         return resp.json()
                     }
                     else if(resp.status === 400) {
-                        alert("Email Address or Password in incorrect format")
+                        alert("Email Address or Password in incorrect format !")
+                    }
+                    else if(resp.status === 409) {
+                        alert("Account already exists !")
                     }
                 })
                 .catch(er => console.log(er))
