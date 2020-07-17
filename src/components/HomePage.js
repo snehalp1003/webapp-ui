@@ -55,9 +55,16 @@ class HomePage extends React.Component {
         })
     }
 
-    logoutUser = () => {
+    logoutUser = (userEmailAddress) => {
         var self = this;
-        self.props.func2();
+        let targetUrl =`/v1/logoutUser/userEmailAddress/${userEmailAddress}`
+
+        return fetch(targetUrl , {method: 'PUT'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        self.props.func2();
+                })
+                .catch(er => console.log(er))
     }
 
     render() {
@@ -156,7 +163,7 @@ class HomePage extends React.Component {
                         <Button variant="primary" onClick={updateUserPassword(this.props.userStore.email, this.state.oldPassword,this.state.newPassword,this.state.confirmPassword)}>Update Password</Button>
                     </Modal.Footer>
                 </Modal>
-                <Button variant="secondary" onClick={() => this.logoutUser()}>Logout</Button>
+                <Button variant="secondary" onClick={() => this.logoutUser(this.props.userStore.email)}>Logout</Button>
               </div>
             </div>
           </div>
