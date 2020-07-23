@@ -15,7 +15,9 @@ class LoginPage extends React.Component {
             show: false,
             enteredEmail: '',
             enteredPassword: '',
-            showHomepage: false
+            showHomepage: false,
+            showForgotPassword: false,
+            forgotPasswordEmail: ''
         }
     }
 
@@ -28,6 +30,18 @@ class LoginPage extends React.Component {
     handleShow() {
         this.setState({
             show: true
+        })
+    }
+
+    forgotPasswordClose() {
+        this.setState({
+            showForgotPassword: false
+        })
+    }
+
+    forgotPasswordShow() {
+        this.setState({
+            showForgotPassword: true
         })
     }
 
@@ -102,6 +116,17 @@ class LoginPage extends React.Component {
                 .catch(er => console.log(er))
     }
 
+    forgotPasswordLink = (email) => {
+        let targetUrl =`/v1/forgotPassword/userEmailAddress/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        alert("Password reset link sent !");
+                })
+                .catch(er => console.log(er))
+    }
+
     render() {
         if (this.state.showHomepage)
             return <HomePage/>;
@@ -128,7 +153,8 @@ class LoginPage extends React.Component {
               <br></br>
               <div>
                   <Button variant="primary" onClick={() => this.handleShow()}>Sign Up</Button> &emsp;
-                  <Button variant="primary" onClick={() => this.callMethodsOnLogin(this.state.enteredEmail,this.state.enteredPassword)}>Sign In</Button>
+                  <Button variant="primary" onClick={() => this.callMethodsOnLogin(this.state.enteredEmail,this.state.enteredPassword)}>Sign In</Button> &emsp;
+                  <Button variant="primary" onClick={() => this.forgotPasswordShow()}>Forgot Password</Button>
                   <Modal show={this.state.show} onHide={() => this.handleClose()}>
                       <Modal.Header closeButton>
                           <Modal.Title>Create a account</Modal.Title>
@@ -154,6 +180,22 @@ class LoginPage extends React.Component {
                       <Modal.Footer>
                           <Button variant="secondary" onClick={() => this.handleClose()}>Close</Button>
                           <Button variant="primary" onClick={postUserDetails(this.state.email,this.state.password,this.state.firstname,this.state.lastname)}>Create Account</Button>
+                      </Modal.Footer>
+                  </Modal>
+                  {/* Below Modal is defined for Forgot Password */}
+                  <Modal show={this.state.showForgotPassword} onHide={() => this.forgotPasswordClose()}>
+                      <Modal.Header closeButton>
+                          <Modal.Title>Forgot Password !</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                          <label>
+                            Enter your email and we'll send you a link to reset your password. &emsp;&emsp;&emsp;
+                          </label>
+                              <input type="text" forgotPasswordEmail="forgotPasswordEmail" onChange={(e) => this.setState({forgotPasswordEmail: e.target.value})}/>
+                      </Modal.Body>
+                      <Modal.Footer>
+                          <Button variant="secondary" onClick={() => this.forgotPasswordClose()}>Close</Button>
+                          <Button variant="primary" onClick={() => this.forgotPasswordLink(this.state.forgotPasswordEmail)}>Submit</Button>
                       </Modal.Footer>
                   </Modal>
               </div>
