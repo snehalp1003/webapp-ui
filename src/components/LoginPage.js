@@ -121,8 +121,13 @@ class LoginPage extends React.Component {
 
         return fetch(targetUrl , {method: 'GET'})
                 .then(resp => {
-                    if (resp.status === 200)
+                    if (resp.status === 200) {
+                        this.setState({forgotPasswordEmail: ''})
                         alert("Password reset link sent !");
+                    } else if (resp.status === 404) {
+                        this.setState({forgotPasswordEmail: ''})
+                        alert("User account with entered email does not exist !")
+                    }
                 })
                 .catch(er => console.log(er))
     }
