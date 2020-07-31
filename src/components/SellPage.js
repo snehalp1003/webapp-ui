@@ -13,6 +13,7 @@ import Tabs from 'react-bootstrap/Tabs'
 import Alert from 'react-bootstrap/Alert'
 import BuyPage from './BuyPage'
 import CartPage from './CartPage'
+import moment from "moment";
 
 class SellPage extends React.Component {
     constructor(props) {
@@ -117,6 +118,27 @@ class SellPage extends React.Component {
         })
     }
 
+    validateFieldsOnAdd() {
+
+        if(this.state.bookAuthors==="" ||this.state.bookAuthors===undefined || this.state.bookAuthors===null) {
+            alert("Author name is empty !");
+        } else if(this.state.bookISBN==="" ||this.state.bookISBN===undefined || this.state.bookISBN===null) {
+            alert("Book ISBN is empty !");
+        } else if(this.state.bookPrice==="" ||this.state.bookPrice===undefined || this.state.bookPrice===null) {
+            alert("Book Price is not set !");
+        } else if(this.state.bookPubDate==="" ||this.state.bookPubDate===undefined || this.state.bookPubDate===null) {
+            alert("Book Publication Date is empty !");
+        } else if(this.state.bookQuantity==="" ||this.state.bookQuantity===undefined || this.state.bookQuantity===null) {
+            alert("Book Quantity is empty !");
+        } else if(this.state.bookTitle==="" ||this.state.bookTitle===undefined || this.state.bookTitle===null) {
+            alert("Book Title is empty !");
+        } else if (moment(this.state.bookPubDate, 'YYYY-MM-DD',true).isValid() !== true) {
+            alert("Please enter date in YYYY-MM-DD format !")
+        } else {
+            this.addNewBookToSell(this.state.bookISBN, this.props.userStore.email)
+        }
+    }
+
     addNewBookToSell = (bookISBN, email) => {
         var self = this;
         let targetUrl =`/v1/insertBookDetails/bookISBN/${bookISBN}/bookSoldBy/${email}`
@@ -158,6 +180,14 @@ class SellPage extends React.Component {
                 .catch(er => console.log(er))
     }
 
+    validateFieldsOnUpdate() {
+        if (this.state.updatedBookPubDate!=="" && this.state.updatedBookPubDate!==undefined
+            && this.state.updatedBookPubDate!==null && moment(this.state.updatedBookPubDate,'YYYY-MM-DD',true).isValid() !== true) {
+            alert("Please enter date in YYYY-MM-DD format !")
+        } else {
+            this.updateBookDetails(this.state.selectedBook.bookISBN, this.state.selectedBook.bookSoldBy, this.props.userStore.email)
+        }
+    }
 
     updateBookDetails = (bookISBN, bookSoldBy, email) => {
         var self = this;
@@ -277,6 +307,21 @@ class SellPage extends React.Component {
         .catch(er => console.log(er))
     }
 
+    refreshFetchBooksForSelling = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewBooksForSelling/userLoggedIn/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func5(data);
+                })
+                .catch(er => console.log(er))
+    }
+
     render() {
         if (this.state.key === 'Profile') {
              return <HomePage {...this.props}/>
@@ -320,9 +365,10 @@ class SellPage extends React.Component {
             </Tabs>
 
             <br></br>
-            <br></br>
-            <Button variant="primary" onClick={() => this.showHandleNewBook()}>Add a Book</Button>
-            <br></br>
+            <label>
+            <Button variant="primary" onClick={() => this.showHandleNewBook()}>Add a Book</Button> &emsp;
+            <Button variant="primary" onClick={() => this.refreshFetchBooksForSelling(this.props.userStore.email)}>Refresh</Button>
+            </label>
             <br></br>
             <Table striped bordered hover variant="dark" responsive>
                 <thead>
@@ -387,7 +433,7 @@ class SellPage extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.closeHandleNewBook()}>Close</Button>
-                    <Button variant="primary" onClick={() => this.addNewBookToSell(this.state.bookISBN, this.props.userStore.email)}>Add</Button>
+                    <Button variant="primary" onClick={() => this.validateFieldsOnAdd()}>Add</Button>
                 </Modal.Footer>
             </Modal>
             {/*Modal for updating book details*/}
@@ -423,7 +469,7 @@ class SellPage extends React.Component {
                     <label>
                         Quantity: &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
                     </label>
-                        <input type="text" price="price" value={this.state.updatedBookQuantity} onChange={(e) => this.setState({updatedBookQuantity: e.target.value})}/>
+                        <input type="text" quantity="quantity" value={this.state.updatedBookQuantity} onChange={(e) => this.setState({updatedBookQuantity: e.target.value})}/>
                         <br></br>
                         <br></br>
                     <label>
@@ -436,7 +482,7 @@ class SellPage extends React.Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => this.handleClose()}>Close</Button>
-                    <Button variant="primary" onClick={() => this.updateBookDetails(this.state.selectedBook.bookISBN, this.state.selectedBook.bookSoldBy, this.props.userStore.email)}>Update</Button>
+                    <Button variant="primary" onClick={() => this.validateFieldsOnUpdate()}>Update</Button>
                 </Modal.Footer>
             </Modal>
             {/*Alert for Deleting*/}
@@ -516,6 +562,10 @@ const mapDispatchToProps = dispatch => {
         func4: (image) => dispatch({
                     type: 'ADD_BOOK_IMAGE',
                     image: image
+        }),
+        func5: (book) => dispatch ({
+                type: 'FETCH_BOOKS_FOR_SELLING',
+                book: book
         })
     }
 };

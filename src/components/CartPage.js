@@ -9,6 +9,7 @@ import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import SellPage from './SellPage'
 import BuyPage from './BuyPage'
+import Button from 'react-bootstrap/Button';
 
 class CartPage extends React.Component {
     constructor(props) {
@@ -30,6 +31,21 @@ class CartPage extends React.Component {
         this.setState({
             show: true,
         })
+    }
+
+    refreshFetchBooksInCart = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewCartDetails/bookBoughtBy/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func1(data);
+                })
+                .catch(er => console.log(er))
     }
 
     render() {
@@ -70,6 +86,12 @@ class CartPage extends React.Component {
                 </Tab>
             </Tabs>
 
+            <br></br>
+            <label>
+            <Button variant="primary" onClick={() => this.refreshFetchBooksInCart(this.props.userStore.email)}>Refresh</Button>
+            </label>
+            <br></br>
+
             <Table striped bordered hover variant="dark" responsive>
                 <thead>
                     <tr>
@@ -95,6 +117,13 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = dispatch => {
+    return {
+        func1: (book) => dispatch ({
+                type: 'FETCH_BOOKS_IN_CART',
+                book: book
+        })
+    }
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(CartPage);
