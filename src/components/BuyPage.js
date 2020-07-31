@@ -112,6 +112,21 @@ class BuyPage extends React.Component {
                 .catch(er => console.log(er))
     }
 
+    refreshFetchBooksForBuying = (email) => {
+        var self = this;
+        let targetUrl =`/v1/viewBooksForBuying/userLoggedIn/${email}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200)
+                        return resp.json()
+                })
+                .then(data => {
+                    self.props.func2(data);
+                })
+                .catch(er => console.log(er))
+    }
+
     render() {
         if (this.state.key === 'Profile') {
              return <HomePage {...this.props}/>
@@ -150,6 +165,12 @@ class BuyPage extends React.Component {
                 <Tab eventKey="Cart" title="Cart">
                 </Tab>
             </Tabs>
+
+            <br></br>
+            <label>
+            <Button variant="primary" onClick={() => this.refreshFetchBooksForBuying(this.props.userStore.email)}>Refresh</Button>
+            </label>
+            <br></br>
 
             <Table striped bordered hover variant="dark" responsive>
                 <thead>
@@ -242,6 +263,10 @@ const mapDispatchToProps = dispatch => {
     return {
         func1: (book) => dispatch({
                     type: 'ADD_BOOK_TO_CART',
+                    book: book
+                }),
+        func2: (book) => dispatch ({
+                    type: 'FETCH_BOOKS_FOR_BUYING',
                     book: book
                 })
     }

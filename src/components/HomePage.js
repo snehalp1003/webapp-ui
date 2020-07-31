@@ -67,6 +67,26 @@ class HomePage extends React.Component {
                 .catch(er => console.log(er))
     }
 
+    refreshUserDetails = (email,password) => {
+        var self = this;
+        let targetUrl =`/v1/fetchUserDetails/userEmailAddress/${email}/userPassword/${password}`
+
+        return fetch(targetUrl , {method: 'GET'})
+                .then(resp => {
+                    if (resp.status === 200) {
+                        alert("Refreshed Data !");
+                        return resp.json()
+                    }
+                    else {
+                        alert("Incorrect Credentials !");
+                    }
+                })
+                .then(data => {
+                    self.props.func1(email, this.state.firstname, this.state.lastname, password);
+                })
+                .catch(er => console.log(er))
+    }
+
     render() {
         if (this.state.key === 'Buy') {
              return <BuyPage {...this.props}/>
@@ -163,6 +183,7 @@ class HomePage extends React.Component {
                         <Button variant="primary" onClick={updateUserPassword(this.props.userStore.email, this.state.oldPassword,this.state.newPassword,this.state.confirmPassword)}>Update Password</Button>
                     </Modal.Footer>
                 </Modal>
+                <Button variant="primary" onClick={() => this.refreshUserDetails(this.props.userStore.email, this.props.userStore.password)}>Refresh</Button> &emsp;
                 <Button variant="secondary" onClick={() => this.logoutUser(this.props.userStore.email)}>Logout</Button>
               </div>
             </div>
