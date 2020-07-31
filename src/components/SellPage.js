@@ -181,7 +181,7 @@ class SellPage extends React.Component {
     }
 
     validateFieldsOnUpdate() {
-        if (this.state.updatedBookPubDate!=="" && this.state.updatedBookPubDate!==undefined
+        if (this.state.updatedBookPubDate!==this.state.selectedBook.bookPubDate && this.state.updatedBookPubDate!=="" && this.state.updatedBookPubDate!==undefined
             && this.state.updatedBookPubDate!==null && moment(this.state.updatedBookPubDate,'YYYY-MM-DD',true).isValid() !== true) {
             alert("Please enter date in YYYY-MM-DD format !")
         } else {
